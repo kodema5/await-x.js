@@ -1,0 +1,7 @@
+{
+    "tasks": {
+        "dev": "deno test --watch --allow-all --unstable-broadcast-channel --trace-leaks --no-clear-screen .",
+
+        "test": "deno test --unstable-broadcast-channel"
+    }
+}
