@@ -1,26 +1,20 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts"
-import { XFns, TIMED_OUT } from '../src/index.js'
+import { XFns, TIMED_OUT, LocalEventTarget } from '../src/index.js'
 
 
-// a fake channel
-//
-const Channel = {
-    addEventListener: globalThis.addEventListener.bind(globalThis),
-    removeEventListener: globalThis.addEventListener.bind(globalThis),
-    postMessage: (data) => globalThis.dispatchEvent(new CustomEvent("message", {detail:data})),
-}
+const Channel = new LocalEventTarget()
 
 
 Deno.test("XFns", async (t) => {
     const xfn1 = (new XFns({fn1: (a,b) => a + b}, Channel, {id:"fn1"}))
     const fn1 = xfn1.proxy
-    const fn2 = (new XFns({fn2: (a,b) => a * b}, Channel, {id:"fn2"})).proxy
-    const fn3a = (new XFns({fn3: (a,b) => a - b}, Channel, {id:"fn3a"})).proxy
-    const fn3b = (new XFns({fn3: (a,b) => a - 2 * b}, Channel, {id:"fn3b"})).proxy
+    const _fn2 = (new XFns({fn2: (a,b) => a * b}, Channel, {id:"fn2"})).proxy
+    const _fn3a = (new XFns({fn3: (a,b) => a - b}, Channel, {id:"fn3a"})).proxy
+    const _fn3b = (new XFns({fn3: (a,b) => a - 2 * b}, Channel, {id:"fn3b"})).proxy
 
     let fn4Cnt = 0
-    const fn4a = (new XFns({fn4: (a) => { fn4Cnt+=a+1 }}, Channel, {id:"fn4a"})).proxy
-    const fn4b = (new XFns({fn4: (a) => { fn4Cnt+=a+2 }}, Channel, {id:"fn4b"})).proxy
+    const _fn4a = (new XFns({fn4: (a) => { fn4Cnt+=a+1 }}, Channel, {id:"fn4a"})).proxy
+    const _fn4b = (new XFns({fn4: (a) => { fn4Cnt+=a+2 }}, Channel, {id:"fn4b"})).proxy
 
     await t.step("can call local function", async () => {
         assertEquals(await fn1.fn1(1,2), 3)
