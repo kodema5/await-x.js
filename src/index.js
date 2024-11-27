@@ -4,4 +4,4 @@ export { XFns } from './XFns.js'
 
 export { FnArray, FnMap } from './FnArray.js'
 
-export { LocalEventTarget } from './LocalEventTarget.js'
+export { LocalChannel } from './LocalChannel.js'

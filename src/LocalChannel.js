@@ -1,9 +1,9 @@
 import { FnArray, } from './FnArray.js'
 
 /**
- * LocalEventTarget implements EventTarget for local-channel
+ * LocalChannel implements EventTarget for local-channel
  */
-export class LocalEventTarget extends EventTarget {
+export class LocalChannel extends EventTarget {
 
     listeners = {}
 

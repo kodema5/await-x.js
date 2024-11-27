@@ -1,8 +1,8 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts"
-import { XFns, TIMED_OUT, LocalEventTarget } from '../src/index.js'
+import { XFns, TIMED_OUT, LocalChannel } from '../src/index.js'
 
 
-const Channel = new LocalEventTarget()
+const Channel = new LocalChannel()
 
 
 Deno.test("XFns", async (t) => {
