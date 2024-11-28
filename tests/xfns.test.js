@@ -48,14 +48,13 @@ Deno.test("XFns", async (t) => {
 
 
     await t.step("discover services while developing", () => {
-        fn1.__sync_reg()
-        const rs = fn1.__regs
+        fn1.$sync_reg()
+        const rs = fn1.$regs
         assertEquals(
             Object.keys(rs).sort(),
             ['fn1', 'fn2', 'fn3a', 'fn3b', 'fn4a', 'fn4b']
         )
     })
-
 
 })
 

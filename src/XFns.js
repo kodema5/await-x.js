@@ -39,10 +39,10 @@ export class XFns {
                     throw SERVICE_UNAVAILABLE
                 }
 
-                // prefixed by __ to access object member
+                // prefixed by $ to access local/private member only
                 //
-                if (id.startsWith('__')) {
-                    const m = id.slice(2)
+                if (id.startsWith('$')) {
+                    const m = id.slice(1)
                     if (!(m in this)) {
                         throw SERVICE_UNAVAILABLE
                     }
@@ -89,11 +89,11 @@ export class XFns {
                     }
                 }
 
-                // __-prefix to access object member
-                // ex: fn.__local
+                // $-prefix to access object member
+                // ex: fn.$a
                 //
-                if (name.startsWith('__')) {
-                    const f = me[name.slice(2)]
+                if (name.startsWith('$')) {
+                    const f = me[name.slice(1)]
                     return typeof(f) === 'function'
                         ? f.bind(me)
                         : f
@@ -153,7 +153,7 @@ export class XFns {
         // initiate sync_reg to all
         //
         if (!callback) {
-            this.proxy['__sync_reg!']({ callback:`__sync_reg!` })
+            this.proxy['$sync_reg!']({ callback:`$sync_reg!` })
             return
         }
 
