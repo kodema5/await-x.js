@@ -1,5 +1,5 @@
-import { XFns } from "../src/index.js";
+import { Ax } from "../src/index.js";
 
-new XFns({
+new Ax({
     foo: (a,b) => a + b
 })

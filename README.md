@@ -1,7 +1,4 @@
-# XFns.js
+# Await X, ax.js
 
-cross-functions XFns(fns, channel) proxies to a local functions-map or
-remote-calls via XMsg channel.
-
-it can be used as shared-channel connected distributed-services, or a wrapper to
-worker's services
+tdlr; to 'await X' to get things, whether local, or via messaging channel, else
+where (ajax, worker, publish-subscribe, etc)
