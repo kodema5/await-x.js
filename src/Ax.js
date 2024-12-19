@@ -116,7 +116,39 @@ export class Ax {
                 }
 
                 throw SERVICE_UNAVAILABLE
-            }
+            },
+
+            // set/overrides local
+            set (me, name, value) {
+                me.local[name] = value
+                return me
+            },
+
+            // checks local handlers
+            has (me, name) {
+                return name in me.local
+            },
+
+            // get local handlers keys
+            ownKeys (me) {
+                return Reflect.ownKeys(me.local)
+            },
+
+            // get own property-descriptor
+            getOwnPropertyDescriptor(me, name) {
+                if (!(name in me.local)) return
+
+                return {
+                    enumerable: true,
+                    configurable: true,
+                    value: me.local[name],
+                }
+            },
+
+            // removes from local
+            deleteProperty(me, name) {
+                return delete me.local[name]
+            },
         })
 
         this.regs = {

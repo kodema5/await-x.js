@@ -56,6 +56,17 @@ Deno.test("Ax", async (t) => {
         )
     })
 
+    await t.step("setting/deleting local", async () => {
+        fn1.foo_bar = 123
+        assertEquals(await fn1.foo_bar, 123)
+        assertEquals('foo_bar' in fn1, true)
+        assertEquals(Object.keys(fn1), ['fn1', 'foo_bar'])
+
+        delete fn1.foo_bar
+        assertEquals('foo_bar' in fn1, false)
+        assertEquals(Object.keys(fn1), ['fn1'])
+    })
+
 })
 
 
