@@ -1,8 +1,8 @@
 export const SERVICE_UNAVAILABLE = '__SERVICE_UNAVAILABLE__'
 export const TIMED_OUT = '__TIMED_OUT__'
-export const XMSG_REQUEST = 'X-MSG-REQUEST'
-export const XMSG_RESPONSE = 'X-MSG-RESPONSE'
-export const XMSG_PUBLISH = 'X-MSG-PUBLISH'
+const XMSG_REQUEST = 'X-MSG-REQUEST'
+const XMSG_RESPONSE = 'X-MSG-RESPONSE'
+const XMSG_PUBLISH = 'X-MSG-PUBLISH'
 
 
 /**
@@ -24,6 +24,8 @@ export class XMsg {
             : {}
     }
 
+
+
     /**
      * initialize channel
      * @param {Object} channel implements postMessage and add/removeEventListeners
@@ -33,6 +35,7 @@ export class XMsg {
      */
     constructor({
         channel,
+        channelId = '',
         id = crypto.randomUUID(),
         exec = () => { throw SERVICE_UNAVAILABLE },
         decode = XMsg.decode,
@@ -40,6 +43,12 @@ export class XMsg {
 
         this.id = id
         this.channel = channel
+
+        this.channelId = channelId
+        this.requestType = `${channelId}:${XMSG_REQUEST}`
+        this.responseType = `${channelId}:${XMSG_RESPONSE}`
+        this.publishType = `${channelId}:${XMSG_PUBLISH}`
+
         this.exec = exec
         this.decode = decode
         this.listener = this.listen.bind(this)
@@ -78,7 +87,7 @@ export class XMsg {
             }
 
             this.channel.postMessage({
-                type: XMSG_REQUEST,
+                type: this.requestType,
                 data,
                 requestId,
                 from: this.id,
@@ -93,7 +102,7 @@ export class XMsg {
      */
     publish(data)  {
         this.channel.postMessage({
-            type: XMSG_PUBLISH,
+            type: this.publishType,
             data,
             from: this.id,
         })
@@ -112,9 +121,9 @@ export class XMsg {
             return
         }
 
-        const isRequest = type === XMSG_REQUEST && requestId
-        const isResponse = type === XMSG_RESPONSE && responseId
-        const isPublish = type === XMSG_PUBLISH
+        const isRequest = type === this.requestType && requestId
+        const isResponse = type === this.responseType && responseId
+        const isPublish = type === this.publishType
         if (!isRequest && !isResponse && !isPublish) {
             return
         }
@@ -158,7 +167,7 @@ export class XMsg {
             }
 
             this.channel.postMessage({
-                type: XMSG_RESPONSE,
+                type: this.responseType,
                 responseId: requestId,
                 data: data_,
                 error: error_,

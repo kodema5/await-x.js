@@ -67,6 +67,24 @@ Deno.test("Ax", async (t) => {
         assertEquals(Object.keys(fn1), ['fn1'])
     })
 
+    await t.step("sharing a channel multiple channels", async () => {
+        const g1a = (new Ax({f1a:11}, Channel, { channelId:"g1" })).proxy
+        const g1b = (new Ax({f1b:12}, Channel, { channelId:"g1" })).proxy
+
+        const g2a = (new Ax({f2a:21}, Channel, { channelId:"g2" })).proxy
+        const g2b = (new Ax({f2b:22}, Channel, { channelId:"g2" })).proxy
+
+        // list functions available in specific channelid
+        g1a.$sync_reg()
+        assertEquals(Object.values(g1a.$regs).flat().sort(), ['f1a', 'f1b'])
+        g2a.$sync_reg()
+        assertEquals(Object.values(g2a.$regs).flat().sort(), ['f2a', 'f2b'])
+
+        assertEquals(await g1a.f1b(), 12)
+        try { await g1a.f2b() } catch(e) { assertEquals(e, TIMED_OUT ) }
+        assertEquals(await g2a.f2b(), 22)
+    })
+
 })
 
 
