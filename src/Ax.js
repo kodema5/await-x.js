@@ -15,6 +15,7 @@ export class Ax {
         channel = globalThis,
         {
             id = crypto.randomUUID(),
+            channelId = '',
             timeout = 1000,
             decode = XMsg.decode,
         } = {},
@@ -27,6 +28,7 @@ export class Ax {
         this.xMsg = new XMsg({
             id,
             channel,
+            channelId,
             decode,
             exec:({name, args}) => {
 
