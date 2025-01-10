@@ -8,7 +8,7 @@ const Channel = new LocalChannel()
 Deno.test("Ax", async (t) => {
     const xfn1 = (new Ax({fn1: (a,b) => a + b}, Channel, {id:"fn1"}))
     const fn1 = xfn1.proxy
-    const _fn2 = (new Ax({fn2: (a,b) => a * b}, Channel, {id:"fn2"})).proxy
+    const _fn2 = (new Ax({fn2: (a,b) => a * b, var2:111}, Channel, {id:"fn2"})).proxy
     const _fn3a = (new Ax({fn3: (a,b) => a - b}, Channel, {id:"fn3a"})).proxy
     const _fn3b = (new Ax({fn3: (a,b) => a - 2 * b}, Channel, {id:"fn3b"})).proxy
 
@@ -22,6 +22,12 @@ Deno.test("Ax", async (t) => {
 
     await t.step("can call service accross channel", async () => {
         assertEquals(await fn1.fn2(1,2), 2)
+    })
+
+    await t.step("can access remote variable as a function", async () => {
+        assertEquals(await fn1.var2(), 111)
+        assertEquals(await fn1.var2(222), 222) // returns the new value
+        assertEquals(await fn1.var2(), 222)
     })
 
     await t.step("can directly call specific service", async () => {
@@ -57,8 +63,14 @@ Deno.test("Ax", async (t) => {
     })
 
     await t.step("setting/deleting local", async () => {
+        // setting by variable
         fn1.foo_bar = 123
-        assertEquals(await fn1.foo_bar, 123)
+        assertEquals(await fn1.foo_bar(), 123) // access is a function
+
+        // setting by function for uniformity, it can be exported elsewhere
+        fn1.foo_bar(456)
+        assertEquals(await fn1.foo_bar(), 456)
+
         assertEquals('foo_bar' in fn1, true)
         assertEquals(Object.keys(fn1), ['fn1', 'foo_bar'])
 

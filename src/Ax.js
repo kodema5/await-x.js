@@ -57,9 +57,14 @@ export class Ax {
                 //
                 if (id in this.local) {
                     const fn = this.local[id]
-                    return typeof(fn) === 'function'
-                        ? fn.apply(null, args)
-                        : fn
+                    if (typeof(fn) === 'function') {
+                        return fn.apply(null, args)
+                    }
+                    if (args.length===1) {
+                        this.local[id] = args[0]
+                        return this.local[id]
+                    }
+                    return fn
                 }
 
                 throw SERVICE_UNAVAILABLE
@@ -103,7 +108,18 @@ export class Ax {
                 // ex: fn.local_name where name is in me.local
                 //
                 if (name in me.local) {
-                    return me.local[name]
+                    const fn = me.local[name]
+                    if (typeof (fn)==='function') {
+                        return fn
+                    }
+                    return function () {
+                        if (arguments.length===1) {
+                            const v = arguments[0]
+                            me.local[name] = v
+                            return v
+                        }
+                        return fn
+                    }
                 }
 
                 // try remote call
