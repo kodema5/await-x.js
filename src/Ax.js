@@ -35,15 +35,15 @@ export class Ax {
                 const ns = name.split('.')
                 const [fnId, id] = ns.length===1 ?  [null, ...ns] : ns
 
-                // if incorrect addressed
+                // return if incorrectly addressed
                 //
                 if (fnId && fnId!==this.id) {
                     throw SERVICE_UNAVAILABLE
                 }
 
-                // prefixed by $ to access local/private member only
+                // prefixed by _ to access local/private member only
                 //
-                if (id.startsWith('$')) {
+                if (id.startsWith('_')) {
                     const m = id.slice(1)
                     if (!(m in this)) {
                         throw SERVICE_UNAVAILABLE
@@ -83,10 +83,10 @@ export class Ax {
                     return
                 }
 
-                // !-postfix means publish (not waiting for return)
-                // ex: fn.remote_name!
+                // "_" postfix means publish (not waiting for return)
+                // ex: fn.remoteName_
                 //
-                const isPublish = name.endsWith('!')
+                const isPublish = name.endsWith('_')
                 if (me.xMsg && isPublish) {
                     return (...args) => {
                         return me.xMsg.publish({
@@ -96,10 +96,10 @@ export class Ax {
                     }
                 }
 
-                // $-prefix to access object member
-                // ex: fn.$a
+                // "_" prefix is to access object member
+                // ex: fn._property
                 //
-                if (name.startsWith('$')) {
+                if (name.startsWith('_')) {
                     const f = me[name.slice(1)]
                     return typeof(f) === 'function'
                         ? f.bind(me)
@@ -124,8 +124,8 @@ export class Ax {
                     }
                 }
 
-                // try remote call
-                // ex: fn.remote_name
+                // if not locally found, try remote call
+                // ex: fn.remoteName
                 //
                 if (me.xMsg && !isPublish) {
                     return async (...args) => {
@@ -203,7 +203,7 @@ export class Ax {
         // initiate sync_reg to all
         //
         if (!callback) {
-            this.proxy['$sync_reg!']({ callback:`$sync_reg!` })
+            this.proxy['_sync_reg_']({ callback:`_sync_reg_` })
             return
         }
 

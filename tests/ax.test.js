@@ -43,19 +43,20 @@ Deno.test("Ax", async (t) => {
         }
     })
 
-    await t.step("can publish with '!' postfix", () => {
-        fn1["fn4!"](2)
+    await t.step("can publish with '_' postfix", () => {
+        // fn1["fn4_"](2)
+        fn1.fn4_(2)
         assertEquals(fn4Cnt, 7)
 
         // publish to specific function
-        fn1["fn4b.fn4!"](2)
+        fn1["fn4b.fn4_"](2)
         assertEquals(fn4Cnt, 11)
     })
 
 
     await t.step("discover services while developing", () => {
-        fn1.$sync_reg()
-        const rs = fn1.$regs
+        fn1._sync_reg()
+        const rs = fn1._regs
         assertEquals(
             Object.keys(rs).sort(),
             ['fn1', 'fn2', 'fn3a', 'fn3b', 'fn4a', 'fn4b']
@@ -87,10 +88,10 @@ Deno.test("Ax", async (t) => {
         const g2b = (new Ax({f2b:22}, Channel, { channelId:"g2" })).proxy
 
         // list functions available in specific channelid
-        g1a.$sync_reg()
-        assertEquals(Object.values(g1a.$regs).flat().sort(), ['f1a', 'f1b'])
-        g2a.$sync_reg()
-        assertEquals(Object.values(g2a.$regs).flat().sort(), ['f2a', 'f2b'])
+        g1a._sync_reg()
+        assertEquals(Object.values(g1a._regs).flat().sort(), ['f1a', 'f1b'])
+        g2a._sync_reg()
+        assertEquals(Object.values(g2a._regs).flat().sort(), ['f2a', 'f2b'])
 
         assertEquals(await g1a.f1b(), 12)
         try { await g1a.f2b() } catch(e) { assertEquals(e, TIMED_OUT ) }
