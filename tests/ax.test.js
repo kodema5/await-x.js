@@ -55,8 +55,8 @@ Deno.test("Ax", async (t) => {
 
 
     await t.step("discover services while developing", () => {
-        fn1._sync_reg()
-        const rs = fn1._regs
+        fn1._dir()
+        const rs = fn1._fns
         assertEquals(
             Object.keys(rs).sort(),
             ['fn1', 'fn2', 'fn3a', 'fn3b', 'fn4a', 'fn4b']
@@ -80,7 +80,7 @@ Deno.test("Ax", async (t) => {
         assertEquals(Object.keys(fn1), ['fn1'])
     })
 
-    await t.step("sharing a channel multiple channels", async () => {
+    await t.step("sharing a channel for multiple sub-channels", async () => {
         const g1a = (new Ax({f1a:11}, Channel, { channelId:"g1" })).proxy
         const g1b = (new Ax({f1b:12}, Channel, { channelId:"g1" })).proxy
 
@@ -88,10 +88,10 @@ Deno.test("Ax", async (t) => {
         const g2b = (new Ax({f2b:22}, Channel, { channelId:"g2" })).proxy
 
         // list functions available in specific channelid
-        g1a._sync_reg()
-        assertEquals(Object.values(g1a._regs).flat().sort(), ['f1a', 'f1b'])
-        g2a._sync_reg()
-        assertEquals(Object.values(g2a._regs).flat().sort(), ['f2a', 'f2b'])
+        g1a._dir()
+        assertEquals(Object.values(g1a._fns).flat().sort(), ['f1a', 'f1b'])
+        g2a._dir()
+        assertEquals(Object.values(g2a._fns).flat().sort(), ['f2a', 'f2b'])
 
         assertEquals(await g1a.f1b(), 12)
         try { await g1a.f2b() } catch(e) { assertEquals(e, TIMED_OUT ) }

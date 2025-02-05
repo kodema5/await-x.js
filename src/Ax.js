@@ -169,7 +169,7 @@ export class Ax {
             },
         })
 
-        this.regs = {
+        this.fns = {
             [this.id]: Object.keys(this.local || {})
         }
     }
@@ -191,19 +191,21 @@ export class Ax {
      * typically during development to discover various functions
      * @param {*} {callback, from, fs}
      */
-    sync_reg({callback, from, fns} = {}) {
+    dir({callback, from, fns} = {}) {
 
         // when received response
         //
         if (from) {
-            this.regs[from] = fns || []
+            this.fns[from] = fns || []
             return
         }
 
-        // initiate sync_reg to all
+        // publish _dir_ to all connected
         //
         if (!callback) {
-            this.proxy['_sync_reg_']({ callback:`_sync_reg_` })
+            this.proxy['_dir_']({
+                callback:`_dir_`
+            })
             return
         }
 
@@ -212,7 +214,7 @@ export class Ax {
         if (callback) {
             this.proxy[callback]({
                 from: this.id,
-                fns: this.regs[this.id],
+                fns: this.fns[this.id],
             })
             return
         }
