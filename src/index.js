@@ -5,3 +5,5 @@ export { AwaitX } from './AwaitX.js'
 export { FnArray, FnMap } from './FnArray.js'
 
 export { LocalChannel } from './LocalChannel.js'
+
+export { ElementChannel } from './ElementChannel.js'
