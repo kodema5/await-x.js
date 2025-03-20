@@ -1,4 +1,5 @@
-# await x(), ax.js
+# await for x()
 
-tdlr; to use 'await x()' to get things, whether local, or via messaging channel,
-else where (ajax, worker, publish-subscribe, frame, etc)
+tdlr; to use 'await x()' to get things, whether local, or else-where via a messaging channel 
+
+so that, not to worry on refactor if function is to be moved elsewhere (ex: to a web-worker)

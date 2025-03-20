@@ -1,20 +1,16 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts"
-import { Ax, TIMED_OUT, LocalChannel } from '../src/index.js'
+import { AwaitX, MessageOption, TIMED_OUT, } from '../src/index.js'
 
 
-const Channel = new LocalChannel()
+Deno.test("AwaitX", async (t) => {
+    const fn1 = AwaitX.init({fn1: (a,b) => a + b}, {id:"fn1"})
+    AwaitX.init({fn2: (a,b) => a * b, var2:111}, {id:"fn2"})
+    AwaitX.init({fn3: (a,b) => a - b}, {id:"fn3a"})
+    AwaitX.init({fn3: (a,b) => a - 2 * b}, {id:"fn3b"})
 
-
-Deno.test("Ax", async (t) => {
-    const xfn1 = (new Ax({fn1: (a,b) => a + b}, Channel, {id:"fn1"}))
-    const fn1 = xfn1.proxy
-    const _fn2 = (new Ax({fn2: (a,b) => a * b, var2:111}, Channel, {id:"fn2"})).proxy
-    const _fn3a = (new Ax({fn3: (a,b) => a - b}, Channel, {id:"fn3a"})).proxy
-    const _fn3b = (new Ax({fn3: (a,b) => a - 2 * b}, Channel, {id:"fn3b"})).proxy
-
-    let fn4Cnt = 0
-    const _fn4a = (new Ax({fn4: (a) => { fn4Cnt+=a+1 }}, Channel, {id:"fn4a"})).proxy
-    const _fn4b = (new Ax({fn4: (a) => { fn4Cnt+=a+2 }}, Channel, {id:"fn4b"})).proxy
+    let fn4Cnt = 0   
+    AwaitX.init({fn4: (a) => { fn4Cnt+=a+1 }}, {id:"fn4a"})
+    AwaitX.init({fn4: (a) => { fn4Cnt+=a+2 }}, {id:"fn4b"})
 
     await t.step("can call local function", async () => {
         assertEquals(await fn1.fn1(1,2), 3)
@@ -37,7 +33,7 @@ Deno.test("Ax", async (t) => {
 
     await t.step("timed-out if not found", async () => {
         try {
-            await fn1.fnone(1,2)
+            await fn1.fnone(new MessageOption({timeout:1000}), 1,2)
         } catch(e) {
             assertEquals(e,TIMED_OUT)
         }
@@ -81,11 +77,12 @@ Deno.test("Ax", async (t) => {
     })
 
     await t.step("sharing a channel for multiple sub-channels", async () => {
-        const g1a = (new Ax({f1a:11}, Channel, { channelId:"g1" })).proxy
-        const g1b = (new Ax({f1b:12}, Channel, { channelId:"g1" })).proxy
+        
 
-        const g2a = (new Ax({f2a:21}, Channel, { channelId:"g2" })).proxy
-        const g2b = (new Ax({f2b:22}, Channel, { channelId:"g2" })).proxy
+        const g1a = AwaitX.init({f1a:11}, { channelId:"g1" })
+        AwaitX.init({f1b:12}, { channelId:"g1" })
+        const g2a = AwaitX.init({f2a:21}, { channelId:"g2" })
+        AwaitX.init({f2b:22}, { channelId:"g2" })
 
         // list functions available in specific channelid
         g1a._dir()
@@ -94,7 +91,7 @@ Deno.test("Ax", async (t) => {
         assertEquals(Object.values(g2a._fns).flat().sort(), ['f2a', 'f2b'])
 
         assertEquals(await g1a.f1b(), 12)
-        try { await g1a.f2b() } catch(e) { assertEquals(e, TIMED_OUT ) }
+        try { await g1a.f2b(new MessageOption({timeout:1000})) } catch(e) { assertEquals(e, TIMED_OUT ) }
         assertEquals(await g2a.f2b(), 22)
     })
 

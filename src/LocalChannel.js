@@ -62,4 +62,10 @@ export class LocalChannel extends EventTarget {
             targetOrigin
         })
     }
+
+
+    /**
+     * a default common local-channel
+     */
+    static default = new LocalChannel()
 }

@@ -1,23 +1,45 @@
-import { XMsg, SERVICE_UNAVAILABLE } from './XMsg.js'
+import { MessageOption, Messenger, SERVICE_UNAVAILABLE } from './Messenger.js'
+import { LocalChannel } from "./LocalChannel.js"
 
+const isWebWorker = () => {
+    try {
+        // deno web-worker does not have importScripts
+        return typeof importScripts === 'function' 
+            || globalThis instanceof WorkerGlobalScope;
+    } catch (_) {
+        return false
+    }
+ }
+  
+  
 /**
  * Ax proxies local functions
  */
-export class Ax {
+export class AwaitX {
     /**
      * creates a proxy that checks functions else, post message to channel
-     * @param {Object} fns hashmap of fucntions
-     * @param {Object} channel to post message if not locally found
-     * @param {Object} {id}
+     * @param {object} fns hashmap of local functions
+     * @param {string} id id of data
+     * @param {Object} channel that accepts postMessage and onMessage
+     * @param {string} channelId a sub-channel within 
+     * @param {function} decode to decode the event data/detail
      */
     constructor(
         fns,
-        channel = globalThis,
         {
+            // random uuid
             id = crypto.randomUUID(),
+            
+            // local-channel is faster
+            channel = isWebWorker() 
+                ? globalThis 
+                : LocalChannel.default,
+            
+            // sub/channel grouping of message
             channelId = '',
-            timeout = 1000,
-            decode = XMsg.decode,
+
+            // to decode event.data/detail
+            decode = Messenger.decode,
         } = {},
     ) {
         this.id = id
@@ -25,23 +47,27 @@ export class Ax {
 
         // wraps a channel for messaging
         //
-        this.xMsg = new XMsg({
+        this.xMsg = new Messenger({
             id,
             channel,
             channelId,
             decode,
-            exec:({name, args}) => {
+
+            // handles reqeusts received
+            //
+            exec: ({name, args}) => {
 
                 const ns = name.split('.')
                 const [fnId, id] = ns.length===1 ?  [null, ...ns] : ns
 
-                // return if incorrectly addressed
+                // throws if an addressed message (fnId)
+                // and address is incorrect
                 //
                 if (fnId && fnId!==this.id) {
                     throw SERVICE_UNAVAILABLE
                 }
 
-                // prefixed by _ to access local/private member only
+                // prefixed by _ to access object instance method
                 //
                 if (id.startsWith('_')) {
                     const m = id.slice(1)
@@ -55,17 +81,27 @@ export class Ax {
                         : f
                 }
 
-                // check local functions to be executed
+                // check local element to be executed
                 //
                 if (id in this.local) {
+
                     const fn = this.local[id]
+
+                    // execute local function
+                    //
                     if (typeof(fn) === 'function') {
                         return fn.apply(null, args)
                     }
+
+                    // if to set local variable
+                    //
                     if (args.length===1) {
                         this.local[id] = args[0]
                         return this.local[id]
                     }
+
+                    // else a get to local variable
+                    //
                     return fn
                 }
 
@@ -114,12 +150,19 @@ export class Ax {
                     if (typeof (fn)==='function') {
                         return fn
                     }
+
                     return function () {
-                        if (arguments.length===1) {
-                            const v = arguments[0]
+                        const { args } = AwaitX.parseOptArgs(arguments)
+
+                        // check if a local set
+                        //
+                        if (args.length===1) {
+                            const v = args[0]
                             me.local[name] = v
                             return v
                         }
+
+                        // check if a local get
                         return fn
                     }
                 }
@@ -128,31 +171,43 @@ export class Ax {
                 // ex: fn.remoteName
                 //
                 if (me.xMsg && !isPublish) {
-                    return async (...args) => {
-                        return await me.xMsg.post({name, args}, {timeout})
+                    return async (...a) => {
+                        const { opt, args } = AwaitX.parseOptArgs(a)
+                        return await me.xMsg.post({name, args}, opt)
                     }
                 }
 
                 throw SERVICE_UNAVAILABLE
             },
 
-            // set/overrides local
+            // ----------------------------------------------
+            // below are for access to local(!!) not remote
+            // likely for debugging for dynamic updates
+            // ----------------------------------------------
+
+            // set/overrides local(!!)
+            // 
             set (me, name, value) {
                 me.local[name] = value
                 return me
             },
 
-            // checks local handlers
+            // checks if has in local(!!)
             has (me, name) {
                 return name in me.local
             },
 
-            // get local handlers keys
+            // get local(!!) keys
             ownKeys (me) {
                 return Reflect.ownKeys(me.local)
             },
 
-            // get own property-descriptor
+            // removes from local(!!)
+            deleteProperty(me, name) {
+                return delete me.local[name]
+            },
+
+            // get own property-descriptor in local(!!)
             getOwnPropertyDescriptor(me, name) {
                 if (!(name in me.local)) return
 
@@ -163,15 +218,28 @@ export class Ax {
                 }
             },
 
-            // removes from local
-            deleteProperty(me, name) {
-                return delete me.local[name]
-            },
         })
 
         this.fns = {
             [this.id]: Object.keys(this.local || {})
         }
+    }
+
+    // check if first arg is a message-option
+    //
+    static parseOptArgs(args) {
+        const hasOpt = args.length>0 && args[0] instanceof MessageOption 
+        const opt = hasOpt ? args[0] : new MessageOption()
+        return { 
+            opt, 
+            args: hasOpt ? args.slice(1) : args 
+        }
+    }
+
+    // initialize and return proxy
+    //
+    static init(...args) {
+        return new AwaitX(...args).proxy
     }
 
     /**

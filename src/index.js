@@ -1,6 +1,6 @@
-export { XMsg, TIMED_OUT } from './XMsg.js'
+export { Messenger, TIMED_OUT, MessageOption } from './Messenger.js'
 
-export { Ax } from './Ax.js'
+export { AwaitX } from './AwaitX.js'
 
 export { FnArray, FnMap } from './FnArray.js'
 
