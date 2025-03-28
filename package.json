@@ -1,5 +1,5 @@
 {
-    "name": "xfns",
+    "name": "await-x",
     "description": "proxies functions via message channel",
     "version": "0.0.1",
     "main": "src/index.js"
